@@ -5,6 +5,7 @@ import { useAuth } from "@web/hooks/useAuth";
 import { LoginPage, defaultRoute } from "@web/pages/LoginPage";
 import { PlaceholderPage } from "@web/pages/PlaceholderPage";
 import { ProductsPage } from "@web/pages/ProductsPage";
+import { ReceiptPage } from "@web/pages/ReceiptPage";
 import { SellPage } from "@web/pages/SellPage";
 
 function HomeRedirect() {
@@ -18,14 +19,14 @@ export function App() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route element={<RequireRole />}>
+        {/* Outside AppShell: the receipt prints on 80mm paper and must not
+            carry the navigation chrome. */}
+        <Route path="receipt/:id" element={<ReceiptPage />} />
+
         <Route element={<AppShell />}>
           <Route index element={<HomeRedirect />} />
           <Route path="sell" element={<SellPage />} />
           <Route path="sales" element={<PlaceholderPage title="Sales" />} />
-          <Route
-            path="receipt/:id"
-            element={<PlaceholderPage title="Receipt" />}
-          />
 
           <Route element={<RequireRole role="admin" />}>
             <Route path="admin" element={<PlaceholderPage title="Dashboard" />} />

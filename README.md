@@ -72,6 +72,28 @@ npm run dev                  # vite build, then wrangler dev
 `npm run dev` rebuilds the client once and then starts the Worker. The Worker
 serves `dist/client` as static assets, so re-run it after frontend changes.
 
+## Receipts
+
+`/receipt/:id` renders an 80mm thermal layout with no app chrome, and
+`?print=1` opens the print dialog on load (what the sell screen's
+**Print receipt** button uses). The page prints at 72mm, the usable width of
+an 80mm roll once margins are gone.
+
+The shop name, address, phone and footer come from `vars` in
+`wrangler.jsonc` — plain config, not secrets. Edit them for your shop:
+
+```jsonc
+"vars": {
+  "SHOP_NAME": "Your Shop",
+  "SHOP_ADDRESS": "Town, Kenya",
+  "SHOP_PHONE": "+254 7xx xxx xxx",
+  "SHOP_FOOTER": "Thank you!"
+}
+```
+
+Receipts follow the same access rule as sales: a cashier can only open
+their own, an admin can open any.
+
 ## Deploying
 
 ```bash
@@ -108,7 +130,7 @@ These shaped the design and are worth knowing before changing things:
 - [x] Auth — username + PIN, PBKDF2, session cookie, role-based access
 - [x] Products — CRUD, categories, barcode lookup, low-stock filter
 - [x] Sell screen and checkout — scan, cart, discounts, split cash/M-Pesa
-- [ ] Receipts
+- [x] Receipts — 80mm thermal layout, printable and reprintable
 - [ ] Inventory
 - [ ] Refunds and voids
 - [ ] Reports

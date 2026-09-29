@@ -8,6 +8,13 @@
   // (httpServerHandler) needs in order to run Express.
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
+  // Printed on receipts. Plain vars, not secrets: edit them for your shop.
+  "vars": {
+    "SHOP_NAME": "Till Shop",
+    "SHOP_ADDRESS": "Nairobi, Kenya",
+    "SHOP_PHONE": "+254 700 000 000",
+    "SHOP_FOOTER": "Thank you for your business!"
+  },
   "assets": {
     "directory": "./dist/client",
     "binding": "ASSETS",

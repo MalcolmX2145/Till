@@ -23,3 +23,45 @@ body {
     min-height: 2.75rem;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   80mm thermal receipt.
+   Printable width on an 80mm roll is about 72mm once the margins are gone.
+   --------------------------------------------------------------------------- */
+.receipt {
+  width: 72mm;
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #000;
+}
+
+.receipt-rule {
+  border-top: 1px dashed #000;
+  margin: 6px 0;
+}
+
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
+  html,
+  body,
+  #root {
+    height: auto;
+    background: #fff;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .receipt {
+    /* Thermal paper is white; never waste ink emulating the screen. */
+    margin: 0;
+    padding: 4mm 2mm;
+    box-shadow: none;
+  }
+}

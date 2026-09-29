@@ -233,10 +233,17 @@ export function SellPage() {
                 )}
                 <button
                   type="button"
+                  onClick={() => navigate(`/receipt/${lastSale.id}?print=1`)}
+                  className="rounded border border-emerald-300 px-2 py-0.5 font-medium hover:bg-emerald-100"
+                >
+                  Print receipt
+                </button>
+                <button
+                  type="button"
                   onClick={() => navigate(`/receipt/${lastSale.id}`)}
                   className="rounded border border-emerald-300 px-2 py-0.5 font-medium hover:bg-emerald-100"
                 >
-                  Receipt
+                  View
                 </button>
                 <button
                   type="button"
