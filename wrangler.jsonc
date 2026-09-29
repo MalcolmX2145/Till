@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "till",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2025-09-15",
+  // nodejs_compat at compat_date >= 2025-09-01 implies
+  // enable_nodejs_http_server_modules, which `cloudflare:node`
+  // (httpServerHandler) needs in order to run Express.
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    // SPA fallback would otherwise swallow unmatched /api/* and never
+    // invoke the Worker, so force the Worker to run first for the API.
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "till-db",
+      "database_id": "PLACEHOLDER_RUN_WRANGLER_D1_CREATE",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

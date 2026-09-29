@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-100 text-slate-900 antialiased;
+  /* The sell screen is used on a tablet; stop rubber-band scrolling. */
+  overscroll-behavior: none;
+}
+
+/* Tap targets stay finger-sized on tablets without hurting mouse use. */
+@media (pointer: coarse) {
+  button,
+  [role="button"] {
+    min-height: 2.75rem;
+  }
+}

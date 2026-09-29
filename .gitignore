@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+seed.sql
+worker-configuration.d.ts
+*.local
+.DS_Store
