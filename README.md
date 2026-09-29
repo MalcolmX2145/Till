@@ -93,8 +93,10 @@ These shaped the design and are worth knowing before changing things:
   batch — so a sale and its stock deductions succeed or fail together.
 - **Max 100 bound parameters per query**, so sale lines are inserted one
   statement per line inside the batch rather than as one wide `INSERT`.
-- **Queries per Worker invocation: 50 on the free plan**, 1,000 on paid. This
-  caps how many distinct lines a single checkout can carry.
+- **Queries per Worker invocation: 50 on the free plan**, 1,000 on paid. A
+  checkout costs 1 read + 1 sale insert + ceil(n/9) item inserts + n stock
+  updates + ceil(n/12) movement inserts + 1 payments insert, so a cart is
+  capped at 30 lines (`MAX_CART_LINES`), which lands around 40 queries.
 - **`not_found_handling: "single-page-application"` bypasses the Worker**, which
   would swallow `/api/*` 404s. `run_worker_first: ["/api/*"]` forces API traffic
   through Express while everything else gets the SPA fallback.
@@ -105,7 +107,7 @@ These shaped the design and are worth knowing before changing things:
 
 - [x] Auth — username + PIN, PBKDF2, session cookie, role-based access
 - [x] Products — CRUD, categories, barcode lookup, low-stock filter
-- [ ] Sell screen and checkout
+- [x] Sell screen and checkout — scan, cart, discounts, split cash/M-Pesa
 - [ ] Receipts
 - [ ] Inventory
 - [ ] Refunds and voids

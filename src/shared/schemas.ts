@@ -150,3 +150,134 @@ export interface CategoryDto {
   name: string;
   productCount: number;
 }
+
+// ---------------------------------------------------------------------------
+// Sales and checkout
+// ---------------------------------------------------------------------------
+
+/**
+ * Hard cap on cart lines. D1 allows 50 queries per Worker invocation on the
+ * free plan; a checkout costs roughly 1 read + 1 sale + ceil(n/9) item
+ * inserts + n stock updates + ceil(n/14) movement inserts + 1 payments
+ * insert, so 30 lines lands near 40 and leaves headroom.
+ */
+export const MAX_CART_LINES = 30;
+
+export const paymentMethodSchema = z.enum(["cash", "mpesa"]);
+export type PaymentMethod = z.infer<typeof paymentMethodSchema>;
+
+export const mpesaCodeSchema = z
+  .string()
+  .trim()
+  .min(6, "M-Pesa code looks too short")
+  .max(20, "M-Pesa code looks too long")
+  .regex(/^[A-Za-z0-9]+$/, "M-Pesa codes are letters and numbers only");
+
+const paymentBase = {
+  amountCents: z.number().int().positive("Payment must be greater than zero"),
+};
+
+export const paymentInputSchema = z.discriminatedUnion("method", [
+  z.object({
+    ...paymentBase,
+    method: z.literal("cash"),
+    /** What the customer handed over; change is tendered minus amount. */
+    tenderedCents: z.number().int().nonnegative(),
+  }),
+  z.object({
+    ...paymentBase,
+    method: z.literal("mpesa"),
+    mpesaCode: mpesaCodeSchema,
+  }),
+]);
+export type PaymentInput = z.infer<typeof paymentInputSchema>;
+
+export const saleItemInputSchema = z.object({
+  productId: z.string().trim().min(1),
+  qty: z.number().int().positive("Quantity must be at least 1"),
+  discountCents: z.number().int().nonnegative().default(0),
+});
+export type SaleItemInput = z.infer<typeof saleItemInputSchema>;
+
+export const createSaleSchema = z.object({
+  // Prices are never taken from the client; the server reads them from the
+  // products table and snapshots those.
+  items: z
+    .array(saleItemInputSchema)
+    .min(1, "Add at least one item")
+    .max(MAX_CART_LINES, `A sale can hold at most ${MAX_CART_LINES} lines`),
+  cartDiscountCents: z.number().int().nonnegative().default(0),
+  payments: z
+    .array(paymentInputSchema)
+    .min(1, "Add a payment")
+    .max(4, "Too many split payments"),
+  note: z.string().trim().max(200).optional(),
+});
+export type CreateSaleInput = z.infer<typeof createSaleSchema>;
+
+export const saleListQuerySchema = z.object({
+  from: z.coerce.number().int().optional(),
+  to: z.coerce.number().int().optional(),
+  cashierId: z.string().trim().min(1).optional(),
+  status: z
+    .enum(["completed", "voided", "refunded", "partially_refunded"])
+    .optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+export type SaleListQuery = z.infer<typeof saleListQuerySchema>;
+
+export type SaleStatus =
+  | "completed"
+  | "voided"
+  | "refunded"
+  | "partially_refunded";
+
+export interface SaleItemDto {
+  id: string;
+  productId: string | null;
+  name: string;
+  sku: string;
+  unitPriceCents: number;
+  unitCostCents: number;
+  qty: number;
+  discountCents: number;
+  lineTotalCents: number;
+  refundedQty: number;
+}
+
+export interface PaymentDto {
+  id: string;
+  method: PaymentMethod;
+  amountCents: number;
+  tenderedCents: number | null;
+  changeCents: number | null;
+  mpesaCode: string | null;
+}
+
+export interface SaleSummaryDto {
+  id: string;
+  saleNo: string;
+  status: SaleStatus;
+  cashierId: string;
+  cashierName: string;
+  itemCount: number;
+  subtotalCents: number;
+  discountCents: number;
+  totalCents: number;
+  createdAt: number;
+}
+
+export interface SaleDto extends SaleSummaryDto {
+  costTotalCents: number;
+  note: string | null;
+  voidedAt: number | null;
+  voidReason: string | null;
+  items: SaleItemDto[];
+  payments: PaymentDto[];
+}
+
+/** Sale numbers are derived from the sequence, not stored twice. */
+export function formatSaleNo(seq: number): string {
+  return `S-${String(seq).padStart(6, "0")}`;
+}

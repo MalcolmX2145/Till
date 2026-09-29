@@ -5,6 +5,7 @@ import { useAuth } from "@web/hooks/useAuth";
 import { LoginPage, defaultRoute } from "@web/pages/LoginPage";
 import { PlaceholderPage } from "@web/pages/PlaceholderPage";
 import { ProductsPage } from "@web/pages/ProductsPage";
+import { SellPage } from "@web/pages/SellPage";
 
 function HomeRedirect() {
   const { user } = useAuth();
@@ -19,8 +20,12 @@ export function App() {
       <Route element={<RequireRole />}>
         <Route element={<AppShell />}>
           <Route index element={<HomeRedirect />} />
-          <Route path="sell" element={<PlaceholderPage title="Sell" />} />
+          <Route path="sell" element={<SellPage />} />
           <Route path="sales" element={<PlaceholderPage title="Sales" />} />
+          <Route
+            path="receipt/:id"
+            element={<PlaceholderPage title="Receipt" />}
+          />
 
           <Route element={<RequireRole role="admin" />}>
             <Route path="admin" element={<PlaceholderPage title="Dashboard" />} />

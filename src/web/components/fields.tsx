@@ -28,9 +28,8 @@ export function Field({
   );
 }
 
-export function TextField(
-  props: React.InputHTMLAttributes<HTMLInputElement>,
-) {
+// ComponentPropsWithRef so the sell screen can keep focus on the scan box.
+export function TextField(props: React.ComponentPropsWithRef<"input">) {
   return <input {...props} className={inputClass} />;
 }
 
