@@ -1,9 +1,11 @@
 import { httpServerHandler } from "cloudflare:node";
 import express from "express";
 import "./types";
-import { attachUser } from "./middleware/auth";
+import { attachUser, requireAuth } from "./middleware/auth";
 import { errorHandler, notFoundHandler } from "./middleware/error";
 import { authRouter } from "./routes/auth";
+import { categoriesRouter } from "./routes/categories";
+import { productsRouter } from "./routes/products";
 
 const app = express();
 
@@ -15,6 +17,8 @@ app.use(express.json({ limit: "256kb" }));
 // reaches Express, so everything below is mounted under /api.
 app.use("/api", attachUser);
 app.use("/api/auth", authRouter);
+app.use("/api/products", requireAuth, productsRouter);
+app.use("/api/categories", requireAuth, categoriesRouter);
 
 app.use("/api", notFoundHandler);
 app.use(errorHandler);

@@ -4,6 +4,7 @@ import { RequireRole } from "@web/components/RequireRole";
 import { useAuth } from "@web/hooks/useAuth";
 import { LoginPage, defaultRoute } from "@web/pages/LoginPage";
 import { PlaceholderPage } from "@web/pages/PlaceholderPage";
+import { ProductsPage } from "@web/pages/ProductsPage";
 
 function HomeRedirect() {
   const { user } = useAuth();
@@ -23,10 +24,7 @@ export function App() {
 
           <Route element={<RequireRole role="admin" />}>
             <Route path="admin" element={<PlaceholderPage title="Dashboard" />} />
-            <Route
-              path="admin/products"
-              element={<PlaceholderPage title="Products" />}
-            />
+            <Route path="admin/products" element={<ProductsPage />} />
             <Route
               path="admin/inventory"
               element={<PlaceholderPage title="Inventory" />}

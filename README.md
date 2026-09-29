@@ -58,6 +58,9 @@ npm run db:seed:local
 ```
 
 Seeded logins: `admin` / PIN `1234` and `cashier` / PIN `4321`.
+The seed also creates 6 categories and 32 products with barcodes, one of
+which starts below its low-stock threshold so the dashboard has something
+to show.
 Change these before deploying anywhere real.
 
 ### Run
@@ -101,7 +104,7 @@ These shaped the design and are worth knowing before changing things:
 ## Progress
 
 - [x] Auth — username + PIN, PBKDF2, session cookie, role-based access
-- [ ] Products
+- [x] Products — CRUD, categories, barcode lookup, low-stock filter
 - [ ] Sell screen and checkout
 - [ ] Receipts
 - [ ] Inventory
