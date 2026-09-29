@@ -281,3 +281,94 @@ export interface SaleDto extends SaleSummaryDto {
 export function formatSaleNo(seq: number): string {
   return `S-${String(seq).padStart(6, "0")}`;
 }
+
+// ---------------------------------------------------------------------------
+// Inventory
+// ---------------------------------------------------------------------------
+
+export const movementReasonSchema = z.enum([
+  "sale",
+  "restock",
+  "damage",
+  "correction",
+  "void",
+  "refund",
+]);
+export type MovementReason = z.infer<typeof movementReasonSchema>;
+
+const adjustNote = z.string().trim().max(200).optional();
+
+/**
+ * Every adjustment is applied as a relative delta, including corrections.
+ *
+ * A stocktake that counts 40 while the system says 35 becomes "+5", not
+ * "set to 40". If a sale happens between the count and the save, a relative
+ * delta keeps that sale — an absolute set would silently undo it.
+ */
+export const adjustStockSchema = z.discriminatedUnion("reason", [
+  z.object({
+    reason: z.literal("restock"),
+    productId: z.string().trim().min(1),
+    qty: z.number().int().positive("Enter how many came in"),
+    note: adjustNote,
+  }),
+  z.object({
+    reason: z.literal("damage"),
+    productId: z.string().trim().min(1),
+    qty: z.number().int().positive("Enter how many were lost"),
+    note: adjustNote,
+  }),
+  z.object({
+    reason: z.literal("correction"),
+    productId: z.string().trim().min(1),
+    /** The quantity actually counted on the shelf. */
+    countedQty: z.number().int().nonnegative("Counted stock cannot be negative"),
+    note: adjustNote,
+  }),
+]);
+export type AdjustStockInput = z.infer<typeof adjustStockSchema>;
+
+export const movementListQuerySchema = z.object({
+  productId: z.string().trim().min(1).optional(),
+  reason: movementReasonSchema.optional(),
+  from: z.coerce.number().int().optional(),
+  to: z.coerce.number().int().optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+export type MovementListQuery = z.infer<typeof movementListQuerySchema>;
+
+export interface StockMovementDto {
+  id: string;
+  productId: string;
+  productName: string;
+  productSku: string;
+  delta: number;
+  reason: MovementReason;
+  refSaleId: string | null;
+  refSaleNo: string | null;
+  note: string | null;
+  userName: string | null;
+  createdAt: number;
+}
+
+export interface LowStockDto {
+  id: string;
+  name: string;
+  sku: string;
+  categoryName: string | null;
+  stockQty: number;
+  lowStockThreshold: number;
+  /** How far below the threshold, so the worst offenders sort first. */
+  shortfall: number;
+}
+
+/** Human label for a movement reason. */
+export const REASON_LABELS: Record<MovementReason, string> = {
+  sale: "Sale",
+  restock: "Restock",
+  damage: "Damage / loss",
+  correction: "Stock correction",
+  void: "Sale voided",
+  refund: "Refund",
+};

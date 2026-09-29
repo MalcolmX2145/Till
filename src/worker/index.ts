@@ -5,6 +5,7 @@ import { attachUser, requireAuth } from "./middleware/auth";
 import { errorHandler, notFoundHandler } from "./middleware/error";
 import { authRouter } from "./routes/auth";
 import { categoriesRouter } from "./routes/categories";
+import { inventoryRouter } from "./routes/inventory";
 import { productsRouter } from "./routes/products";
 import { salesRouter } from "./routes/sales";
 import { shopRouter } from "./routes/shop";
@@ -22,6 +23,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/products", requireAuth, productsRouter);
 app.use("/api/categories", requireAuth, categoriesRouter);
 app.use("/api/sales", requireAuth, salesRouter);
+app.use("/api/inventory", requireAuth, inventoryRouter);
 app.use("/api/shop", requireAuth, shopRouter);
 
 app.use("/api", notFoundHandler);

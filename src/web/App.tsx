@@ -4,6 +4,7 @@ import { RequireRole } from "@web/components/RequireRole";
 import { useAuth } from "@web/hooks/useAuth";
 import { LoginPage, defaultRoute } from "@web/pages/LoginPage";
 import { PlaceholderPage } from "@web/pages/PlaceholderPage";
+import { InventoryPage } from "@web/pages/InventoryPage";
 import { ProductsPage } from "@web/pages/ProductsPage";
 import { ReceiptPage } from "@web/pages/ReceiptPage";
 import { SellPage } from "@web/pages/SellPage";
@@ -31,10 +32,7 @@ export function App() {
           <Route element={<RequireRole role="admin" />}>
             <Route path="admin" element={<PlaceholderPage title="Dashboard" />} />
             <Route path="admin/products" element={<ProductsPage />} />
-            <Route
-              path="admin/inventory"
-              element={<PlaceholderPage title="Inventory" />}
-            />
+            <Route path="admin/inventory" element={<InventoryPage />} />
             <Route
               path="admin/reports"
               element={<PlaceholderPage title="Reports" />}

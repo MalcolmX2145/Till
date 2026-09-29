@@ -72,6 +72,24 @@ npm run dev                  # vite build, then wrangler dev
 `npm run dev` rebuilds the client once and then starts the Worker. The Worker
 serves `dist/client` as static assets, so re-run it after frontend changes.
 
+## Inventory
+
+Every stock change goes through `stock_movements`, including the opening
+stock a product is created with and the deductions a sale makes. That makes
+the table a complete ledger, and this query should always return no rows:
+
+```sql
+SELECT p.name FROM products p
+LEFT JOIN stock_movements m ON m.product_id = p.id
+GROUP BY p.id
+HAVING p.stock_qty <> COALESCE(SUM(m.delta), 0);
+```
+
+Adjustments are always applied as a **relative delta**, including stocktake
+corrections. Counting 40 when the system says 35 records `+5`, not "set to
+40". If a sale lands between the count and the save, a relative delta keeps
+that sale; an absolute set would silently undo it.
+
 ## Receipts
 
 `/receipt/:id` renders an 80mm thermal layout with no app chrome, and
@@ -131,6 +149,6 @@ These shaped the design and are worth knowing before changing things:
 - [x] Products — CRUD, categories, barcode lookup, low-stock filter
 - [x] Sell screen and checkout — scan, cart, discounts, split cash/M-Pesa
 - [x] Receipts — 80mm thermal layout, printable and reprintable
-- [ ] Inventory
+- [x] Inventory — adjustments with reasons, movement log, low-stock list
 - [ ] Refunds and voids
 - [ ] Reports
