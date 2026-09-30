@@ -1,0 +1,46 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # Lets you redeploy the current main from the Actions tab without a commit.
+  workflow_dispatch:
+
+# A second push while one deploy is running cancels the older one, so the
+# last commit always wins rather than racing.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Gate the deploy: a type error should never reach production.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build client
+        run: npm run build:web
+
+      # Deploys the Worker and uploads dist/client as static assets.
+      # It does NOT run D1 migrations — those stay a deliberate manual step
+      # (npm run db:migrate:remote), so a schema change cannot be applied to
+      # the live database by accident.
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
