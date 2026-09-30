@@ -115,12 +115,31 @@ their own, an admin can open any.
 ## Deploying
 
 ```bash
-npx wrangler secret put SESSION_SECRET
+npx wrangler login                                  # browser approval, once
+npx wrangler d1 create till-db                      # paste the id into wrangler.jsonc
+npm run db:migrate:remote                           # create the tables
+npx wrangler secret put SESSION_SECRET              # paste a long random string
+npm run seed:gen -- --prod                          # random PINs, not 1234
+npm run db:seed:remote                              # load categories + products
 npm run deploy
 ```
 
-Do not set `ENVIRONMENT` in production — its absence is what makes the session
-cookie `Secure`.
+Generate the session secret with:
+
+```bash
+node -e "console.log(crypto.randomUUID()+crypto.randomUUID())"
+```
+
+`seed:gen -- --prod` writes the generated PINs to `seed-credentials.txt`,
+which is gitignored. Sign in with them, change both PINs from the app, then
+delete the file. Never deploy the development seed: its PINs are 1234 and
+4321, and the app has no rate limiting on login.
+
+Do not set `ENVIRONMENT` in production — its absence is what makes the
+session cookie `Secure`.
+
+Re-running `db:seed:remote` wipes and reloads the database, including sales.
+It is for first setup only.
 
 ## Notes on Cloudflare constraints
 

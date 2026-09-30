@@ -18,9 +18,30 @@ interface SeedUser {
   role: "admin" | "cashier";
 }
 
+/**
+ * `npm run seed:gen` uses the memorable development PINs below.
+ * `npm run seed:gen -- --prod` replaces them with random 6-digit PINs and
+ * writes them to seed-credentials.txt (gitignored) instead of printing them,
+ * so a public deployment never ships with 1234.
+ */
+const PRODUCTION = process.argv.includes("--prod");
+
+function randomPin(): string {
+  const bytes = crypto.getRandomValues(new Uint32Array(1));
+  return String(bytes[0]! % 1_000_000).padStart(6, "0");
+}
+
 const SEED_USERS: SeedUser[] = [
-  { username: "admin", pin: "1234", role: "admin" },
-  { username: "cashier", pin: "4321", role: "cashier" },
+  {
+    username: "admin",
+    pin: PRODUCTION ? randomPin() : "1234",
+    role: "admin",
+  },
+  {
+    username: "cashier",
+    pin: PRODUCTION ? randomPin() : "4321",
+    role: "cashier",
+  },
 ];
 
 const CATEGORIES = [
@@ -158,8 +179,24 @@ async function main(): Promise<void> {
   console.log(
     `Wrote seed.sql: ${SEED_USERS.length} users, ${CATEGORIES.length} categories, ${PRODUCTS.length} products (${lowStock} already at or below the low-stock threshold).`,
   );
-  for (const u of SEED_USERS) {
-    console.log(`  ${u.role.padEnd(8)} ${u.username} / PIN ${u.pin}`);
+
+  if (PRODUCTION) {
+    const lines = [
+      "Till production seed credentials",
+      "Generated " + new Date().toISOString(),
+      "",
+      ...SEED_USERS.map((u) => `${u.role.padEnd(8)} ${u.username}  PIN ${u.pin}`),
+      "",
+      "Sign in, change both PINs from the app, then delete this file.",
+    ];
+    writeFileSync("seed-credentials.txt", lines.join("\n") + "\n", "utf8");
+    console.log(
+      "Production PINs written to seed-credentials.txt (gitignored). Open it, sign in, change both PINs, then delete it.",
+    );
+  } else {
+    for (const u of SEED_USERS) {
+      console.log(`  ${u.role.padEnd(8)} ${u.username} / PIN ${u.pin}`);
+    }
   }
 }
 

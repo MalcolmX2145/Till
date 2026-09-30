@@ -6,3 +6,4 @@ seed.sql
 worker-configuration.d.ts
 *.local
 .DS_Store
+seed-credentials.txt
