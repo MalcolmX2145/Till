@@ -27,7 +27,7 @@
     {
       "binding": "DB",
       "database_name": "till-db",
-      "database_id": "PLACEHOLDER_RUN_WRANGLER_D1_CREATE",
+      "database_id": "7deb9930-7d6d-4940-bfbf-494d7e4d67a4",
       "migrations_dir": "migrations"
     }
   ]
